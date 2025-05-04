@@ -13,7 +13,6 @@ services:
       - "9090:8000"
     hostname: backend 
     volumes:
-      - ./api:/usr/src/app #ignore
       - /usr/src/app/venv #ignore 
     #never shut down the container, always restart
     restart: unless-stopped 
