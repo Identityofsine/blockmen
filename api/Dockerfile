@@ -1,5 +1,9 @@
 FROM python:latest
 
+# Set build args 
+ARG BUILD_DATE
+ARG BUILD_ID
+ARG BRANCH
 
 # Set as environment variables (available during build and runtime)
 ENV BUILD_DATE=$BUILD_DATE
