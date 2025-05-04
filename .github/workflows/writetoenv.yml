@@ -1,3 +1,6 @@
+on:
+  push:
+
 jobs:
   update-env:
     runs-on: ubuntu-latest
@@ -17,3 +20,10 @@ jobs:
           sed -i '/^BRANCH=/d' .env
           echo "BRANCH=dev" >> .env 
 
+      - name: Commit changes
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add .env
+          git commit -m "Update .env file"
+          git push
