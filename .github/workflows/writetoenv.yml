@@ -28,7 +28,7 @@ jobs:
           echo "BUILD_ID=$(git rev-parse --short HEAD)" >> .env
 
           sed -i '/^BRANCH=/d' .env
-          echo "BRANCH=dev" >> .env 
+          echo "BRANCH=$(git rev-parse --abbrev-ref HEAD)" >> .env 
 
       - name: Commit changes
         run: |
