@@ -4,6 +4,10 @@ services:
     build: 
       context: ./api
       dockerfile: Dockerfile
+    args:
+      BUILD_DATE: "${BUILD_DATE}"
+      BUILD_ID: "${BUILD_ID}"
+      BRANCH: "${BRANCH}"
     ports:
       - "3000:3000"
     hostname: backend 
