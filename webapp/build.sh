@@ -3,3 +3,4 @@ VITE_BUILD_ID=$(git rev-parse --short HEAD)
 VITE_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
 tsc -b && VITE_BRANCH=$VITE_BRANCH VITE_BUILD_ID=$VITE_BUILD_ID VITE_BUILD_DATE=$VITE_BUILD_DATE  vite build
+
