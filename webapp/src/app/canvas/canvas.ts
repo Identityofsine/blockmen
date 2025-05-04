@@ -18,13 +18,6 @@ class Canvas {
 		this.opts = { dpi };
 	}
 
-	private adjustXY(x: number, y: number) {
-		return {
-			x: x * this.opts.dpi,
-			y: y * this.opts.dpi,
-		}
-	}
-
 	public clear() {
 		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 	}
@@ -36,9 +29,8 @@ class Canvas {
 		fontSize?: number,
 		color?: string,
 	) {
-		const adjusted = this.adjustXY(x, y);
-		x = adjusted.x;
-		y = adjusted.y;
+		x *= this.opts.dpi;
+		y *= this.opts.dpi;
 		fontSize = (fontSize || 16) * this.opts.dpi;
 		this.context.font = `${fontSize}px Arial`;
 		if (color) {
@@ -50,9 +42,8 @@ class Canvas {
 	}
 
 	public drawCircle(x: number, y: number, radius: number, color: string) {
-		const adjusted = this.adjustXY(x, y);
-		x = adjusted.x;
-		y = adjusted.y;
+		x *= this.opts.dpi;
+		y *= this.opts.dpi;
 		this.context.fillStyle = color;
 		this.context.beginPath();
 		this.context.arc(x, y, radius, 0, Math.PI * 2);
@@ -66,6 +57,13 @@ class Canvas {
 		y2: number,
 		color: string,
 	) {
+		//adjusted
+		{
+			x1 *= this.opts.dpi;
+			y1 *= this.opts.dpi;
+			x2 *= this.opts.dpi;
+			y2 *= this.opts.dpi;
+		}
 		this.context.strokeStyle = color;
 		this.context.beginPath();
 		this.context.moveTo(x1, y1);
@@ -80,12 +78,15 @@ class Canvas {
 		height: number,
 		color: string,
 	) {
-		const adjusted = this.adjustXY(x, y);
+		x *= this.opts.dpi;
+		y *= this.opts.dpi;
 		this.context.fillStyle = color;
-		this.context.fillRect(x, y, width, height);
+		this.context.fillRect(x, y, width * this.opts.dpi, height * this.opts.dpi);
 	}
 
 	public drawSprite(x: number, y: number, sprite: unknown) {
+		x *= this.opts.dpi;
+		y *= this.opts.dpi;
 		throw new Error("Method not implemented.");
 	}
 }

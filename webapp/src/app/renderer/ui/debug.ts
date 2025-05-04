@@ -8,7 +8,8 @@ const config = getBuildConfig();
 export function debugData({ renderer, frameTime }: RenderHookArgs) {
 	const baseX = 20;
 	const baseY = 20;
-	renderer.canvasElement.drawText(`dev(${config.branch}:${config.buildId}):${config.buildDate}`, baseX, baseY, 20, "red");
-	renderer.canvasElement.drawText("Frame Time: " + frameTime, baseX, baseY + 45, 40, "red");
+	const color = "#f1caff"
+	renderer.canvasElement.drawText(`dev(${config.branch}:${config.buildId}):${config.buildDate}`, baseX, baseY, 20, "#f1caff");
+	renderer.canvasElement.drawText("Frame Time: " + frameTime, baseX, baseY + 45, 40, "#f1caff");
 	return;
 }
