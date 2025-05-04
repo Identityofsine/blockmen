@@ -10,7 +10,7 @@ function App() {
 	return (
 		<div>
 			<h1>Max Ward</h1>
-			<p>{buildInfo.branch}:{buildInfo.buildId}-{buildInfo.buildDate}</p>
+			<p>({buildInfo.branch}:{buildInfo.buildId})-{buildInfo.buildDate}</p>
 		</div>
 	)
 }
