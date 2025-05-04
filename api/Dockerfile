@@ -23,6 +23,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # expose port
 EXPOSE 9090 
 
-CMD ["sh", "start_prod.sh"]
+CMD ["python", "./src/blockmen/__init__.py"]
 
 
