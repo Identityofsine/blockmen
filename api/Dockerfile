@@ -21,7 +21,7 @@ COPY . .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # expose port
-EXPOSE 8000
+EXPOSE 9090 
 
 CMD ["sh", "start_prod.sh"]
 

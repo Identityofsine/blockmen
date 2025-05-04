@@ -9,7 +9,7 @@ services:
         BUILD_ID: "${BUILD_ID}"
         BRANCH: "${BRANCH}"
     ports:
-      - "3000:3000"
+      - "9090:8000"
     hostname: backend 
     volumes:
       - /usr/src/app/venv #ignore 
