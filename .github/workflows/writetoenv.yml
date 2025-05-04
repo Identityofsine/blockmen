@@ -1,6 +1,10 @@
 on:
   push:
 
+permissions:
+    contents: write
+
+
 jobs:
   update-env:
     runs-on: ubuntu-latest
