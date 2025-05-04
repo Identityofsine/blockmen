@@ -21,7 +21,7 @@ class Renderer extends Hookable<RendererHookTypes, RenderHookArgs> {
 		super();
 		this.canvas = new Canvas(canvas, canvasOpts);
 		const config = getBuildConfig();
-		if (config.branch === "local" || config.branch === "dev") {
+		if (config.branch !== "main") {
 			this.hookUI(debugData);
 		}
 		this.render();

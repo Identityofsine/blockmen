@@ -1,29 +1,18 @@
-import { useEffect, useRef } from "react";
-import "./App.scss";
-import { getBuildConfig } from "../util/build";
-import Renderer from "./renderer/renderer";
+import { useState } from 'react'
+import './App.scss'
+import { getBuildConfig } from '../util/build'
+
 
 function App() {
-	const buildInfo = getBuildConfig();
-	const canvasRef = useRef<HTMLCanvasElement>(null);
-	const renderer = useRef<Renderer>(null);
 
-	useEffect(() => {
-		if (canvasRef.current) {
-			//could be static if only one canvas
-			renderer.current = new Renderer(canvasRef.current, { dpi: 2 });
-		}
-	}, [canvasRef.current]);
+	const buildInfo = getBuildConfig();
 
 	return (
 		<div>
 			<h1>Max Ward</h1>
-			<p>
-				({buildInfo.branch}:{buildInfo.buildId})-{buildInfo.buildDate}
-			</p>
-			<canvas ref={canvasRef} width={800} height={800} id="canvas"></canvas>
+			<p>({buildInfo.branch}:{buildInfo.buildId})-{buildInfo.buildDate}</p>
 		</div>
-	);
+	)
 }
 
-export default App;
+export default App

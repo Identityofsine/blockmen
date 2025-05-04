@@ -11,5 +11,5 @@ export function debugData({ renderer, frameTime }: RenderHookArgs) {
 	const color = "#f1caff"
 	renderer.canvasElement.drawText(`dev(${config.branch}:${config.buildId}):${config.buildDate}`, baseX, baseY, 20, "#f1caff");
 	renderer.canvasElement.drawText("Frame Time: " + frameTime, baseX, baseY + 45, 40, "#f1caff");
-	return;
+	console.log(color)
 }
