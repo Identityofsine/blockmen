@@ -2,14 +2,12 @@ services:
   backend:
     container_name: blockmen-backend 
     build: 
-      context: ./api/
-      dockerfile: ./api/Dockerfile
+      context: ./api
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
     hostname: backend 
     volumes:
-      - ./:/usr/src/app
-      - /usr/src/app/node_modules #ignore 
-      - /usr/src/app/.next #ingore 
+      - /usr/src/app/venv #ignore 
     #never shut down the container, always restart
     restart: unless-stopped 
