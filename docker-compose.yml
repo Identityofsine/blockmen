@@ -36,7 +36,3 @@ services:
     restart: unless-stopped
     networks:
       - bridge
-
-
-  network:
-    bridge:
