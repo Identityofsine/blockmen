@@ -12,7 +12,8 @@ services:
     ports:
       - "9090:8000"
     hostname: backend 
+    pull_policy: build
     volumes:
-      - ./api/:/usr/src/app #ignore
+      - ./api:/usr/src/ #ignore
     #never shut down the container, always restart
     restart: unless-stopped 
