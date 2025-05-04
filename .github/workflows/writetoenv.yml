@@ -10,6 +10,12 @@ jobs:
 
       - name: Update .env values
         run: |
+          # Check if .env file exists
+          if [ ! -f .env ]; then
+            echo ".env file not found, creating a new one"
+            touch .env
+          fi
+
           # Replace if exists, add if not
           sed -i '/^BUILD_DATE=/d' .env
           echo "BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> .env 
