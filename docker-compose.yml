@@ -13,6 +13,8 @@ services:
       - "9090:9090"
     hostname: backend 
     pull_policy: build
+    networks:
+      - bridge
     #never shut down the container, always restart
     restart: unless-stopped 
   frontend:
@@ -32,3 +34,9 @@ services:
     hostname: frontend
     pull_policy: build
     restart: unless-stopped
+    networks:
+      - bridge
+
+
+  network:
+  bridge
