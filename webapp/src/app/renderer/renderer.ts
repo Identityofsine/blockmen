@@ -5,48 +5,75 @@ import { debugData } from "./ui/debug";
 
 type RendererHookTypes = "ui" | "foreground" | "background";
 
-class Renderer extends Hookable<RendererHookTypes, Renderer> {
-  private readonly canvas: Canvas;
+export type RenderHookArgs = {
+	renderer: Renderer;
+	//debug data
+	frameTime?: number;
+};
 
-  constructor(canvas: HTMLCanvasElement) {
-    super();
-    this.canvas = new Canvas(canvas);
-    const config = getBuildConfig();
-    if (config.branch === "local" || config.branch === "dev") {
-      this.hookUI(debugData);
-    }
-    this.render();
-  }
+class Renderer extends Hookable<RendererHookTypes, RenderHookArgs> {
+	private readonly canvas: Canvas;
+	private fps: number = 0;
+	private fpsLastTime: number = 0;
+	private frameCount: number = 0;
 
-  public hookUI(hook: HookFunction<Renderer>): void {
-    this.addHook("ui", hook);
-  }
+	constructor(canvas: HTMLCanvasElement) {
+		super();
+		this.canvas = new Canvas(canvas);
+		const config = getBuildConfig();
+		if (config.branch === "local" || config.branch === "dev") {
+			this.hookUI(debugData);
+		}
+		this.render();
+	}
 
-  public hookForeground(hook: HookFunction<Renderer>): void {
-    this.addHook("foreground", hook);
-  }
+	public hookUI(hook: HookFunction<RenderHookArgs>): void {
+		this.addHook("ui", hook);
+	}
 
-  public hookBackground(hook: HookFunction<Renderer>): void {
-    this.addHook("background", hook);
-  }
+	public hookForeground(hook: HookFunction<RenderHookArgs>): void {
+		this.addHook("foreground", hook);
+	}
 
-  public get canvasElement(): Canvas {
-    return this.canvas;
-  }
+	public hookBackground(hook: HookFunction<RenderHookArgs>): void {
+		this.addHook("background", hook);
+	}
 
-  public get context(): CanvasRenderingContext2D {
-    return this.canvas.context;
-  }
+	public get canvasElement(): Canvas {
+		return this.canvas;
+	}
 
-  private render() {
-    //render loop, gets call every frame
-    this.emitHooks("ui", this);
-    this.emitHooks("foreground", this);
-    this.emitHooks("background", this);
-    requestAnimationFrame(() => {
-      this.render();
-    });
-  }
+	public get context(): CanvasRenderingContext2D {
+		return this.canvas.context;
+	}
+
+	private calculateFramesPerSecond(): number {
+		const now = performance.now();
+		this.frameCount++;
+
+		// Check if one second has passed to calculate FPS
+		if (now - this.fpsLastTime >= 1000) {
+			this.fps = this.frameCount;
+			this.frameCount = 0; // Reset the frame counter
+			this.fpsLastTime = now; // Reset the time for the next second
+		}
+		return this.fps;
+	}
+
+	private render() {
+		//render loop, gets call every frame
+		const argOpts = {
+			renderer: this,
+			frameTime: this.calculateFramesPerSecond(),
+		}
+		this.canvas.clear();
+		this.emitHooks("ui", argOpts);
+		this.emitHooks("foreground", argOpts);
+		this.emitHooks("background", argOpts);
+		requestAnimationFrame(() => {
+			this.render();
+		});
+	}
 }
 
 export default Renderer;
