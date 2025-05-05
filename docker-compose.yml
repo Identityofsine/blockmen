@@ -1,0 +1,37 @@
+services:
+  backend:
+    container_name: blockmen-backend 
+    env_file: ".env"
+    build: 
+      context: ./api
+      dockerfile: Dockerfile
+      args:
+        BUILD_DATE: "${BUILD_DATE}"
+        BUILD_ID: "${BUILD_ID}"
+        BRANCH: "${BRANCH}"
+    ports:
+      - "9090:9090"
+    hostname: backend 
+    pull_policy: build
+    network_mode: bridge
+    #never shut down the container, always restart
+    restart: unless-stopped 
+  frontend:
+    container_name: blockmen-frontend
+    env_file: ".env"
+    volumes:
+      - /usr/src/app/node_modules 
+    build:
+      context: ./webapp
+      dockerfile: Dockerfile
+      args:
+        BUILD_DATE: "${BUILD_DATE}"
+        BUILD_ID: "${BUILD_ID}"
+        BRANCH: "${BRANCH}"
+    ports:
+      - "9091:9091"
+
+    hostname: frontend
+    pull_policy: build
+    restart: unless-stopped
+    network_mode: bridge

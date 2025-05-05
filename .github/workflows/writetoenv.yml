@@ -1,0 +1,39 @@
+on:
+  push:
+
+permissions:
+    contents: write
+
+
+jobs:
+  update-env:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Update .env values
+        run: |
+          # Check if .env file exists
+          if [ ! -f .env ]; then
+            echo ".env file not found, creating a new one"
+            touch .env
+          fi
+
+          # Replace if exists, add if not
+          sed -i '/^BUILD_DATE=/d' .env
+          echo "BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> .env 
+
+          sed -i '/^BUILD_ID=/d' .env
+          echo "BUILD_ID=$(git rev-parse --short HEAD)" >> .env
+
+          sed -i '/^BRANCH=/d' .env
+          echo "BRANCH=$(git rev-parse --abbrev-ref HEAD)" >> .env 
+
+      - name: Commit changes
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add .env
+          git commit -m "Update .env file"
+          git push
