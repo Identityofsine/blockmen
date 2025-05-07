@@ -31,6 +31,8 @@ COPY ./nginx/sites-available/web.conf /etc/nginx/sites-available/default
 
 COPY . .
 
+RUN npm install -g typescript
+RUN npm install -g vite
 RUN npm i 
 
 RUN ./build.sh
