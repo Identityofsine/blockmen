@@ -7,6 +7,8 @@ from model.client.client import Client
 from model.player.player import Player
 from service.logger import logDebug, logInfo, logWarning
 
+import json
+
 class WebSocketInterface(ABC):
     def __init__(self):
         self.socketRunning = False
@@ -30,22 +32,18 @@ class WebSocketInterface(ABC):
         client = Player(self.clients.__len__() + 1, 0, server_connection, 0)
         self.clients.append(client)
         # non blocking listener
-        await self.broadcast_helloworld()
+        await self.broadcast_helloworld(client)
         await self.catch_message(client)
 
-    async def broadcast_helloworld(self):
+    async def broadcast_helloworld(self, client: Client):
         """
         Broadcast a message to all connected clients.
         """
-        alive_clients = []
-        for client in self.clients[:]:
-            try:
-                logDebug(f"Sending client {client.client_id} 'Hello World'")
-                await client.getConnection().send("Hello World")
-                alive_clients.append(client)
-            except websockets.exceptions.ConnectionClosed:
-                logWarning(f"Client {client.client_id} disconnected")
-        self.clients = alive_clients
+        try:
+            logDebug(f"Sending client {client.client_id} 'Hello World'")
+            await client.getConnection().send("Hello World")
+        except websockets.exceptions.ConnectionClosed:
+            logWarning(f"Client {client.client_id} disconnected (broadcast_helloworld)")
 
     async def catch_message(self, client: Client):
         """
@@ -54,17 +52,20 @@ class WebSocketInterface(ABC):
         try:
             logDebug(f"Waiting for message from client {client.client_id}")
             while True:
-                request = await client.getConnection().recv()
-                logDebug(f"Received message from client {client.client_id}: {request}")
-                
-                # Process the request
-                response = self.handle_request(client, request)
+                message = await client.getConnection().recv()
+                logDebug(f"Received message from client {client.client_id}: {message}")
+                try:
+                    request_data = json.loads(message) # Assuming the message is in JSON format
+                    response = self.handle_request(client, request_data)
+                except json.JSONDecodeError:
+                    logWarning(f"Invalid JSON from client {client.client_id}: {message}")
+                    response = "Error: Invalid JSON"
                 # Send a response back to the client if applicable
                 if response:
                     await client.getConnection().send(response)
 
         except websockets.exceptions.ConnectionClosed:
-            logWarning(f"Client {client.client_id} disconnected")
+            logWarning(f"Client {client.client_id} disconnected (catch_message)")
             self.remove_client(client)
         except Exception as e:
             logWarning(f"Error in communication with client {client.client_id}: {e}")
@@ -72,22 +73,28 @@ class WebSocketInterface(ABC):
 
     # Handle different types of requests from the client
     # This is a placeholder for the actual request handling logic
-    # Will probably parse json here later
-    def handle_request(self, client: Client, request: str) -> str:
+    # Basic json request handling
+    def handle_request(self, client: Client, request_data: dict) -> str:
         """
         Handle a client request and return a response if needed.
         """
         try:
-            if request == "ping":
+            action = request_data.get("action")
+            if action == "ping":
                 logDebug(f"Client {client.client_id} sent a ping")
                 return "pong"
-            elif request == "disconnect":
+            elif action == "disconnect":
                 logInfo(f"Client {client.client_id} requested to disconnect")
                 self.remove_client(client)
                 return "Disconnected"
+            elif action in ["up", "down", "left", "right"]:
+                #if isinstance(client, Player): # Not needed if we are sure client is always a Player
+                client.move(action)
+                logDebug(f"Client {client.client_id} moved {action} to ({client.x}, {client.y})")
+                return f"Moved {action}. New position: ({client.x}, {client.y})"
             else:
-                logWarning(f"Unknown request from client {client.client_id}: {request}")
-                return "Error: Unknown request"
+                logWarning(f"Unknown action from client {client.client_id}: {action}")
+                return "Error: Unknown action"
         except Exception as e:
             logWarning(f"Error handling request from client {client.client_id}: {e}")
             return "Error: Internal server error"
@@ -101,5 +108,4 @@ class WebSocketInterface(ABC):
         """
         if client in self.clients:
             self.clients.remove(client)
-            logInfo(f"Client {client.client_id} removed from client list.")
             asyncio.create_task(client.getConnection().close())
