@@ -1,6 +1,7 @@
 npm i
 npm install typescript -g
 npm install vite -g
+npx tsc
 
 ls $(pwd) 
 
