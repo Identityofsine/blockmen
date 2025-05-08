@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.scss'
 import { getBuildConfig } from '../util/build'
-import Canvas from './canvas/canvas';
 import Renderer from './renderer/renderer';
 
 
@@ -15,7 +14,7 @@ function App() {
 		if (canvasRef.current) {
 			renderer.current = new Renderer(canvasRef.current, { dpi: 2 });
 		}
-	}, [canvasRef.current])
+	}, [])
 
 
 	return (
