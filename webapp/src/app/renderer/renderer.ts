@@ -20,10 +20,7 @@ class Renderer extends Hookable<RendererHookTypes, RenderHookArgs> {
 	constructor(canvas: HTMLCanvasElement, canvasOpts = { dpi: 1 }) {
 		super();
 		this.canvas = new Canvas(canvas, canvasOpts);
-		const config = getBuildConfig();
-		if (config.branch === "local" || config.branch === "dev") {
-			this.hookUI(debugData);
-		}
+		this.hookUI(debugData);
 		this.render();
 	}
 
