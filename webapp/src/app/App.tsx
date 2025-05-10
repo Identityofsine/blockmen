@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import './App.scss'
 import { getBuildConfig } from '../util/build'
 import Renderer from './renderer/renderer';
+import { WebSocketInstance } from './websocket/websocket';
 
 
 function App() {
@@ -11,6 +12,11 @@ function App() {
 	const renderer = useRef<Renderer>(null);
 
 	useEffect(() => {
+		WebSocketInstance.getInstance().connect();
+		WebSocketInstance.getInstance().addEventListener('open', () => {
+			console.log("WebSocket opened");
+			WebSocketInstance.getInstance().send({ type: "ping" });
+		});
 		if (canvasRef.current) {
 			renderer.current = new Renderer(canvasRef.current, { dpi: 2 });
 		}
