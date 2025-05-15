@@ -7,6 +7,7 @@ from model.client.client import Client
 from model.player.player import Player
 from service.logger import logDebug, logInfo, logWarning
 from websocket.request_handler import RequestRegistry
+from validator.validator import Validator
 
 import json
 
@@ -56,11 +57,18 @@ class WebSocketInterface(ABC):
                 message_from_client = await client.getConnection().recv()
                 logDebug(f"Received message from client {client.client_id}: {message_from_client}")
                 try:
-                    parsed_message = json.loads(message_from_client) # Assuming the message is in JSON format
-                    response = await self.send_to_handler(client, parsed_message)
-                except json.JSONDecodeError:
+                    request_json = json.loads(message_from_client)
+                    is_valid, request = Validator.validate_request(request_json)
+                    
+                    if is_valid:
+                        response = await self.send_to_handler(client, request)
+                    else:
+                        response = json.dumps({"status": "error", "message": request})
+                        logWarning(f"Invalid request from client {client.client_id}: {request}")
+                        
+                except json.JSONDecodeError as e:
                     logWarning(f"Invalid JSON from client {client.client_id}: {message_from_client}")
-                    response = "Error: Invalid JSON"
+                    response = json.dumps({"status": "error", "message": {"Invalid JSON format"}})
                 # Send a response back to the client
                 if response:
                     await client.getConnection().send(response)
