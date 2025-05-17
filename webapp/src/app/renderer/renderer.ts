@@ -1,6 +1,6 @@
-import { getBuildConfig } from "../../util/build";
 import Canvas from "../canvas/canvas";
 import { Hookable, HookFunction } from "../hook/hook";
+import { SceneManager } from "./scene/scenemanager";
 import { debugData } from "./ui/debug";
 
 type RendererHookTypes = "ui" | "foreground" | "background";
@@ -16,9 +16,17 @@ class Renderer extends Hookable<RendererHookTypes, RenderHookArgs> {
 	private fps: number = 0;
 	private fpsLastTime: number = 0;
 	private frameCount: number = 0;
+	private sceneManager: SceneManager;
 
 	constructor(canvas: HTMLCanvasElement, canvasOpts = { dpi: 1 }) {
 		super();
+		this.sceneManager = new SceneManager(this);
+		this.addHook("background", () => {
+			this.sceneManager.scene?.renderBackground(this);
+		})
+		this.addHook("foreground", () => {
+			this.sceneManager.scene?.renderForeground(this);
+		})
 		this.canvas = new Canvas(canvas, canvasOpts);
 		this.hookUI(debugData);
 		this.render();
@@ -44,6 +52,10 @@ class Renderer extends Hookable<RendererHookTypes, RenderHookArgs> {
 		return this.canvas.context;
 	}
 
+	public get scenes(): SceneManager {
+		return this.sceneManager;
+	}
+
 	private calculateFramesPerSecond(): number {
 		const now = performance.now();
 		this.frameCount++;
@@ -64,9 +76,9 @@ class Renderer extends Hookable<RendererHookTypes, RenderHookArgs> {
 			frameTime: this.calculateFramesPerSecond(),
 		}
 		this.canvas.clear();
-		this.emitHooks("ui", argOpts);
-		this.emitHooks("foreground", argOpts);
 		this.emitHooks("background", argOpts);
+		this.emitHooks("foreground", argOpts);
+		this.emitHooks("ui", argOpts);
 		requestAnimationFrame(() => {
 			this.render();
 		});

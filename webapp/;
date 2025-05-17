@@ -1,0 +1,11 @@
+import Renderer from "../renderer";
+
+export class SceneManager {
+	
+	private renderer: Renderer;
+
+	public constructor(renderer: Renderer) {
+		this.renderer = renderer;
+	}
+
+}

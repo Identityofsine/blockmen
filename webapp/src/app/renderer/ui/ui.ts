@@ -4,7 +4,7 @@ import { RenderStateObject } from "../objects/renderstateobject";
 
 export class UIService {
 	//state functions
-	readonly private stateFunctions: RenderStateObject[] = [];
+	private readonly stateFunctions: RenderStateObject[] = [];
 
 
 

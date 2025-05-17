@@ -3,6 +3,7 @@ import './App.scss'
 import { getBuildConfig } from '../util/build'
 import Renderer from './renderer/renderer';
 import { WebSocketInstance } from './websocket/websocket';
+import { DemoWorld } from './renderer/scene/views/DemoWorld';
 
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
 		});
 		if (canvasRef.current) {
 			renderer.current = new Renderer(canvasRef.current, { dpi: 2 });
+			renderer.current.scenes.loadScene(new DemoWorld())
 		}
 	}, [])
 
