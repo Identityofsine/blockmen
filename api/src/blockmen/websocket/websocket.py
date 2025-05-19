@@ -59,13 +59,12 @@ class WebSocketInterface(ABC):
 
                 is_valid, request = Validator.validate_request(message_from_client)
                 if is_valid:
-                    response = await RequestRegistry.handle_request(client, request, context=self)
+                    result = await RequestRegistry.handle_request(client, request, context=self)
+                    await self.send_response(result)
                 else:
-                    response = json.dumps({"status": "error", "message": request})
+                    error_result = json.dumps({"status": "error", "message": request})
                     logWarning(f"Invalid request from client {client.client_id}: {request}")
-
-                # Send a response back to the client
-                await self.send_response(client, response)
+                    await self.send_response((client, error_result))
 
         except websockets.exceptions.ConnectionClosed:
             logWarning(f"Client {client.client_id} disconnected (catch_message)")
@@ -82,12 +81,26 @@ class WebSocketInterface(ABC):
             asyncio.create_task(client.getConnection().close())
             self.clients.remove(client)
 
-    async def send_response(self, client: Client, response: str):
+    async def send_response(self, result):
         """
-        Sends a response to the client with error handling for serialization issues.
+        Sends a response to one or more clients.
+        
+        result can be:
+            - (client, response)
+            - (client_list, response)
         """
-        try:
-            logDebug(f"Sending response to client {client.client_id}: {response}")
-            await client.getConnection().send(response)
-        except Exception as e:
-            logError(f"Error sending response to client {client.client_id}: {e}")
+        recipients, response = result
+        
+        if isinstance(recipients, list):
+            for client in recipients:
+                try:
+                    logDebug(f"Sending response to client {client.client_id}: {response}")
+                    await client.getConnection().send(response)
+                except Exception as e:
+                    logError(f"Error sending response to client {client.client_id}: {e}")
+        else:
+            try:
+                logDebug(f"Sending response to client {recipients.client_id}: {response}")
+                await recipients.getConnection().send(response)
+            except Exception as e:
+                logError(f"Error sending response to client {recipients.client_id}: {e}")
