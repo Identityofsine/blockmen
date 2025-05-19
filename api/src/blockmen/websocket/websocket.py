@@ -5,7 +5,7 @@ import websockets.asyncio.server as ws_server
 
 from model.client.client import Client
 from model.player.player import Player
-from service.logger import logDebug, logInfo, logWarning
+from service.logger import logDebug, logInfo, logWarning, logError
 from websocket.request_handler import RequestRegistry
 from validator.validator import Validator
 
@@ -56,44 +56,38 @@ class WebSocketInterface(ABC):
             while True:
                 message_from_client = await client.getConnection().recv()
                 logDebug(f"Received message from client {client.client_id}: {message_from_client}")
-                try:
-                    request_json = json.loads(message_from_client)
-                    is_valid, request = Validator.validate_request(request_json)
-                    
-                    if is_valid:
-                        response = await self.send_to_handler(client, request)
-                    else:
-                        response = json.dumps({"status": "error", "message": request})
-                        logWarning(f"Invalid request from client {client.client_id}: {request}")
-                        
-                except json.JSONDecodeError as e:
-                    logWarning(f"Invalid JSON from client {client.client_id}: {message_from_client}")
-                    response = json.dumps({"status": "error", "message": {"Invalid JSON format"}})
+
+                is_valid, request = Validator.validate_request(message_from_client)
+                if is_valid:
+                    response = await RequestRegistry.handle_request(client, request, context=self)
+                else:
+                    response = json.dumps({"status": "error", "message": request})
+                    logWarning(f"Invalid request from client {client.client_id}: {request}")
+
                 # Send a response back to the client
-                if response:
-                    await client.getConnection().send(response)
+                await self.send_response(client, response)
 
         except websockets.exceptions.ConnectionClosed:
             logWarning(f"Client {client.client_id} disconnected (catch_message)")
             self.remove_client(client)
         except Exception as e:
-            logWarning(f"Error in communication with client {client.client_id}: {e}")
+            logError(f"Error in communication with client {client.client_id}: {e}")
             self.remove_client(client)
-
-    async def send_to_handler(self, client: Client, request_data: dict) -> str:
-        """
-        Handle a client request and return a response.
-        This method uses the RequestRegistry to find the appropriate handler for the request.
-        client - The client that sent the request.
-        request_data - The data sent by the client.
-        context - The context of the WebSocketInterface.
-        """
-        return await RequestRegistry.handle_request(client, request_data, context=self)
 
     def remove_client(self, client: Client):
         """
         Remove a client from the active client list.
         """
         if client in self.clients:
-            self.clients.remove(client)
             asyncio.create_task(client.getConnection().close())
+            self.clients.remove(client)
+
+    async def send_response(self, client: Client, response: str):
+        """
+        Sends a response to the client with error handling for serialization issues.
+        """
+        try:
+            logDebug(f"Sending response to client {client.client_id}: {response}")
+            await client.getConnection().send(response)
+        except Exception as e:
+            logError(f"Error sending response to client {client.client_id}: {e}")

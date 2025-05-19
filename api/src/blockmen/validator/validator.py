@@ -1,7 +1,7 @@
 import json
 from typing import Dict, Any, Tuple
 from pathlib import Path
-from jsonschema import validate, ValidationError
+from jsonschema import validate, ValidationError, FormatChecker
 from service.logger import logDebug, logWarning, logError
 
 # Validator class for validating JSON requests against predefined schemas.
@@ -34,6 +34,12 @@ class Validator:
     
     @classmethod
     def validate_request(cls, request: Any) -> Tuple[bool, Any]:
+        try:
+            request = json.loads(request)
+        except json.JSONDecodeError as e:
+            logWarning(f"Invalid JSON format: {e}")
+            return False, "Invalid JSON format"
+
         if not isinstance(request, dict):
             return False, "Request must be a JSON object"
         
@@ -47,7 +53,7 @@ class Validator:
             return False, f"Unknown request type: {request_type}"
         
         try:
-            validate(instance=request, schema=schema)
+            validate(instance=request, schema=schema, format_checker=FormatChecker())
             logDebug(f"Request validated successfully: {request_type}")
             return True, request
     

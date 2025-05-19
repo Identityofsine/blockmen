@@ -11,7 +11,8 @@
       "required": ["group_id"],
       "properties": {
         "group_id": {
-          "type": "integer"
+          "type": "integer",
+          "minimum": 0
         }
       }
     }

@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, Type, Any, Optional
 from service.logger import logDebug, logInfo, logWarning
 from dataclasses import dataclass
+from constants.constants import RequestType
 import inspect
 
 # This module defines a request handler system for the websocket.
@@ -78,7 +79,7 @@ class RequestRegistry:
 # Examples of request handlers
 # Eventually, these can be moved to separate files
 # e.g. api/src/blockmen/websocket/request_handlers/ping.py or api/src/blockmen/websocket/request_handlers/disconnect.py
-@RequestRegistry.register("ping")
+@RequestRegistry.register(RequestType.PING.value)
 class PingRequest(BaseRequest):
     """
     {
@@ -89,7 +90,7 @@ class PingRequest(BaseRequest):
     def process(cls, client, request_instance, context):
         return "pong"
 
-@RequestRegistry.register("disconnect")
+@RequestRegistry.register(RequestType.DISCONNECT.value)
 class DisconnectRequest(BaseRequest):
     """
     {
@@ -105,7 +106,7 @@ class DisconnectRequest(BaseRequest):
 
         return f"Client {client.client_id} disconnected"
 
-@RequestRegistry.register("move")
+@RequestRegistry.register(RequestType.MOVE.value)
 class MoveRequest(BaseRequest):
     """
     {
@@ -126,8 +127,8 @@ class MoveRequest(BaseRequest):
             
         client.move(direction)
         return f"Moved {direction}. New position: ({client.x}, {client.y})"
-        
-@RequestRegistry.register("chat")
+
+@RequestRegistry.register(RequestType.CHAT.value)
 class ChatRequest(BaseRequest):
     """
     {
@@ -161,7 +162,7 @@ class ChatRequest(BaseRequest):
             elif msg_destination == "all":
                 await c.getConnection().send(f"All Chat: {payload}")
 
-@RequestRegistry.register("join_group")
+@RequestRegistry.register(RequestType.JOIN_GROUP.value)
 class JoinGroupRequest(BaseRequest):
     """
     {
